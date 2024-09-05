@@ -1,0 +1,28 @@
+﻿@page "/counter"
+@using shearwell_test.Models
+@using shearwell_test.Services
+@inject GroupService GroupService
+@inject AnimalService AnimalService
+@inject AnimalGroupRelService AnimalGroupRelService
+
+<PageTitle>Animals in Test Group</PageTitle>
+
+<h1>Counter</h1>
+
+@foreach(var animal in animalsInGroup)
+{
+    <p>@animal.Tag</p>
+    <p>@animal.DateOfBirth</p>
+}
+
+
+@code {
+    List<Animal> animalsInGroup = [];
+    protected override async Task OnParametersSetAsync()
+    {
+        //hard coded for demonstration
+        animalsInGroup = AnimalService.listAnimalsFromGroup(new Guid("AD686775-8067-49BA-BF52-6165A8A83AEC"));
+
+    }
+
+}

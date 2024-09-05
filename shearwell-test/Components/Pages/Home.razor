@@ -1,0 +1,94 @@
+﻿@page "/"
+@inject GroupService GroupService
+@inject AnimalService AnimalService
+@inject AnimalGroupRelService AnimalGroupRelService
+@using System.Text.RegularExpressions
+@using shearwell_test.Helpers
+@using shearwell_test.Models
+@using shearwell_test.Services
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Components
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+
+<EditForm Model=formModel FormName="AnimalForm" OnSubmit="@OnSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <InputSelect @bind-Value="formModel.Id">
+            <option value="">Select...</option>
+            @foreach (var group in groupsList)
+            {
+                <option value="@group.Id"> @group.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <label for="tag">Tag:</label>
+        <InputText @bind-Value="formModel.Tag" />
+    </div>
+
+    <div class="form-group">
+        <label for="dateOfBirth">Date of Birth:</label>
+        <InputDate id="dateOfBirth" @bind-Value="formModel.DateOfBirth" />
+    </div>
+
+    <button type="submit" value="Submit" class="btn btn-primary">Submit</button>
+</EditForm>
+
+<input @bind="groupName" placeholder="Enter group name" />
+<button type="button" @onclick="SaveGroup">Save Group</button>
+
+
+
+@code{
+    [SupplyParameterFromForm]
+    private FormModel? formModel { get; set; } = null;
+    String SelectedId;
+    String groupName = "";
+    List<Models.Group> groupsList = null;
+    FormHelpers formHelpers = new FormHelpers();
+
+    protected override async Task OnInitializedAsync()
+    {
+        formModel ??= new();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        groupsList = GroupService.listGroups();
+
+    }
+
+
+
+    private void SaveGroup()
+    {
+        GroupService.addGroup(groupName);
+    }
+
+    private async void OnSubmit()
+    {
+        if(formHelpers.ValidateTagInput(formModel.Tag)) await AnimalService.AddAnimal(new Animal() { Tag = formModel.Tag, DateOfBirth = formModel.DateOfBirth }, formModel.Id);
+    }
+
+    private class FormModel
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required, StringLength(17), RegularExpression(@"^UK\d{7} \d{5}$")]
+        public string Tag { get; set; }
+
+        [Required]
+        public DateTime DateOfBirth { get; set; }
+    }
+
+}
